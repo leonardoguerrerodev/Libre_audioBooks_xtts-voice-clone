@@ -2,7 +2,7 @@
 Categories=Utility;
 Comment[es_CL]=Convierte epub a txt para TTS
 Comment=Convierte epub a txt para TTS
-Exec=konsole --hold -e bash -c 'source ./venv/bin/activate && python ./epub_to_tts.py "%f"'
+Exec=konsole --hold -e bash -c 'source "/home/xaski/Documentos/!GitHub/!XTTS/venv/bin/activate" && python "/home/xaski/Documentos/!GitHub/!XTTS/epub_to_tts.py" "%f"'
 GenericName[es_CL]=
 GenericName=
 Icon=accessories-ebook-reader
