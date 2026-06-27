@@ -1,0 +1,31 @@
+# ── Entornos virtuales y modelos (pesados, no versionar) ────────────────
+venv/
+venv_xtts/
+models/
+
+# ── Audio: NO subir voces clonadas ni audios generados ──────────────────
+# (solo se versionan las HERRAMIENTAS para grabarlas/convertirlas)
+*.wav
+*.ogg
+*.mp3
+*.m4a
+*.flac
+*.opus
+*.aac
+
+# ── Salidas de conversión (audiolibros + textos fuente) ─────────────────
+Libros_contertidos/
+
+# ── Configuración local de la GUI (presets de voz) ──────────────────────
+voces_config.json
+
+# ── Python / caché ──────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+
+# ── Editor / escritorio / herramientas locales ──────────────────────────
+.directory
+.claude/
+.vscode/
+.idea/

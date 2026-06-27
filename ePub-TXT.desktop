@@ -1,0 +1,18 @@
+[Desktop Entry]
+Categories=Utility;
+Comment[es_CL]=Convierte epub a txt para TTS
+Comment=Convierte epub a txt para TTS
+Exec=konsole --hold -e bash -c 'source ./venv/bin/activate && python ./epub_to_tts.py "%f"'
+GenericName[es_CL]=
+GenericName=
+Icon=accessories-ebook-reader
+MimeType=application/epub+zip;
+Name[es_CL]=epub2tts
+Name=epub2tts
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

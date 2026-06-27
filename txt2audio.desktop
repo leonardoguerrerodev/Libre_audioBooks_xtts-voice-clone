@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=txt2audio
+Name[es_CL]=txt2audio
+GenericName=Conversor TXT a audio
+Comment=Convierte un archivo .txt en audio (.wav) con Kokoro TTS
+Comment[es_CL]=Convierte un archivo .txt en audio (.wav) con Kokoro TTS
+Exec=konsole --hold -e "/home/xaski/Documentos/!GitHub/!XTTS/txt2audio.sh" %f
+Icon=audio-x-generic
+Categories=Utility;AudioVideo;
+MimeType=text/plain;
+Terminal=false
+StartupNotify=true

@@ -1,0 +1,18 @@
+[Desktop Entry]
+Categories=Utility;AudioVideo;
+Comment[es_CL]=Arrastra audios (ogg, mp3, m4a, flac...) para convertirlos a .wav 24kHz mono
+Comment=Arrastra audios (ogg, mp3, m4a, flac...) para convertirlos a .wav 24kHz mono
+Exec=konsole --hold -e '/home/xaski/Documentos/!GitHub/!XTTS/voz_clonada/a_wav.sh' %F
+GenericName[es_CL]=Conversor de audio a WAV
+GenericName=Conversor de audio a WAV
+Icon=audio-recorder
+MimeType=audio/vnd.wave;audio/ogg;audio/mpeg;audio/mp4;audio/flac;audio/aac;
+Name[es_CL]=Audio → WAV (voz clonada)
+Name=Audio → WAV (voz clonada)
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

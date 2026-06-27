@@ -1,0 +1,23 @@
+# ============================================================================
+#  !XTTS — Índice de dependencias
+# ----------------------------------------------------------------------------
+#  Este proyecto usa DOS entornos virtuales independientes y NO compatibles
+#  entre sí (las versiones de torch y transformers chocan):
+#
+#    venv/        →  Backend CPU · Kokoro  (voz fija, rápido)
+#                    Instala con:  requirements-cpu.txt
+#                    transformers 5.x · torch +cpu
+#
+#    venv_xtts/   →  Backend GPU · XTTS-v2 (voz clonada, requiere CUDA)
+#                    Instala con:  requirements-gpu.txt
+#                    transformers 4.x · torch cu124 · incluye PySide6 (GUI)
+#
+#  NO instales este archivo directamente. Elige el que corresponda al backend
+#  que vayas a usar (o ambos). Cada archivo lleva las instrucciones completas
+#  de creación del venv en su cabecera.
+#
+#  Para liberar espacio puedes desinstalar el venv que no uses desde la GUI
+#  (sección "Mantenimiento de entornos"), o borrando la carpeta a mano:
+#     rm -rf venv/        # quita el backend CPU/Kokoro
+#     rm -rf venv_xtts/   # quita el backend GPU/XTTS  (también la GUI)
+# ============================================================================

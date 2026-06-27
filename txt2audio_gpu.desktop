@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=txt2audio GPU (voz clonada)
+Name[es_CL]=txt2audio GPU (voz clonada)
+GenericName=Conversor TXT a audio (XTTS-v2 GPU)
+Comment=Convierte un .txt en audio con XTTS-v2 en la GPU usando tu voz clonada
+Comment[es_CL]=Convierte un .txt en audio con XTTS-v2 en la GPU usando tu voz clonada
+Exec=konsole --hold -e "/home/xaski/Documentos/!GitHub/!XTTS/txt2audio_gpu.sh" %f
+Icon=audio-input-microphone
+Categories=Utility;AudioVideo;
+MimeType=text/plain;
+Terminal=false
+StartupNotify=true

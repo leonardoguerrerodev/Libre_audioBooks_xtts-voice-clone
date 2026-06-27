@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=XTTS · Texto a Audio
+GenericName=Conversor de texto a voz
+Comment=Convierte .txt a audio con Kokoro (CPU) o XTTS-v2 voz clonada (GPU)
+Exec=/home/xaski/Documentos/!GitHub/!XTTS/xtts_gui.sh
+Icon=audio-headphones
+Categories=Utility;AudioVideo;
+Terminal=false
+StartupNotify=true

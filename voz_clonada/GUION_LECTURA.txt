@@ -1,0 +1,66 @@
+============================================================================
+  GUION DE LECTURA — Muestras de voz para clonar con XTTS-v2
+============================================================================
+
+  Lee cada muestra en voz alta, en una habitación SILENCIOSA, con el
+  micrófono a unos 15-20 cm de la boca y fijo (no lo muevas al grabar).
+  Habla con tu voz NATURAL, volumen de conversación, ritmo de narrador.
+  Si te trabas, repite la toma. No susurres ni grites.
+
+  Total aproximado a leer: 3 muestras = ~45 segundos de voz limpia.
+
+----------------------------------------------------------------------------
+  MUESTRA 1  ·  ~10 segundos  ·  archivo: muestra_1_10s.wav
+----------------------------------------------------------------------------
+  CÓMO LEERLA:
+    Entonación NEUTRA y clara, lectura normal y pausada.
+    Sin emoción especial: como si leyeras una noticia tranquila.
+    Esta toma cubre todos los fonemas del español (pangrama).
+
+  TEXTO:
+    El veloz murciélago hindú comía feliz cardillo y kiwi.
+    La cigüeña tocaba el saxofón detrás del palenque de paja.
+
+----------------------------------------------------------------------------
+  MUESTRA 2  ·  ~15 segundos  ·  archivo: muestra_2_15s.wav
+----------------------------------------------------------------------------
+  CÓMO LEERLA:
+    Marca bien las PREGUNTAS: sube el tono al final de cada "¿...?".
+    Tono conversacional, curioso, como si hablaras con alguien.
+    Deja una pequeña pausa entre frase y frase.
+
+  TEXTO:
+    ¿Qué hora es exactamente? ¿Crees que llegaremos a tiempo al
+    teatro? Jamás imaginé que un jueves cualquiera pudiera
+    cambiarlo todo. Mira bien, escucha con calma y dime qué
+    piensas tú.
+
+----------------------------------------------------------------------------
+  MUESTRA 3  ·  ~20 segundos  ·  archivo: muestra_3_20s.wav
+----------------------------------------------------------------------------
+  CÓMO LEERLA:
+    Pon EMOCIÓN y variedad:
+      · La exclamación "¡Increíble!" con energía.
+      · Los números léelos con calma, vocalizando.
+      · "Habló despacio, con voz grave y serena..." bájalo de tono.
+      · La frase final, en tono de intriga.
+    Esta toma le da rango expresivo al clon de voz.
+
+  TEXTO:
+    ¡Increíble! Nunca había visto algo semejante. En mil
+    novecientos noventa y nueve, treinta y siete viajeros
+    cruzaron el río al amanecer. Habló despacio, con voz grave y
+    serena, mientras la lluvia golpeaba el viejo tejado de zinc.
+    Respira hondo: esto apenas comienza.
+
+============================================================================
+  CONSEJOS DE GRABACIÓN
+============================================================================
+  • Silencio total: sin ventilador, TV, eco ni música de fondo.
+  • Micrófono fijo a ~15-20 cm; no susurres ni grites.
+  • Evita golpes en la mesa, respiraciones pegadas al micro y la "p"/"b"
+    explosiva (ponte un poco de lado del micrófono).
+  • Calidad > cantidad: mejor 3 tomas limpias que muchas con ruido.
+  • Lo más fácil: usa ./grabar_muestras.sh, que ya te guía con estos
+    mismos textos, la cuenta regresiva y une todo en clonada.wav.
+============================================================================
