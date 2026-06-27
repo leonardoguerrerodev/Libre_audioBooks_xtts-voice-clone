@@ -7,6 +7,8 @@ gestión de configuraciones de voz.
 
 Pensado para español, pero XTTS-v2 es multilingüe.
 
+![Captura de la GUI](docs/gui.png)
+
 ---
 
 ## ✨ Características
@@ -67,39 +69,46 @@ Requisitos del sistema: **Python 3.11**, `ffmpeg`, y para el modo GPU una tarjet
 sudo dnf install python3.11 ffmpeg espeak-ng
 ```
 
-El proyecto usa **dos entornos virtuales independientes y NO intercambiables**
-(las versiones de `torch` y `transformers` chocan entre sí). Instala el/los que
-vayas a usar.
+### 1. Instalación inicial — solo la GUI
 
-### Backend GPU · XTTS-v2 (voz clonada)
-
-```bash
-python3.11 -m venv venv_xtts
-source venv_xtts/bin/activate
-# PyTorch con CUDA 12.4:
-pip install torch==2.6.0+cu124 torchaudio==2.6.0+cu124 \
-    --index-url https://download.pytorch.org/whl/cu124
-pip install -r requirements-gpu.txt
-```
-
-> Este entorno incluye **PySide6**, así que la GUI se lanza con él.
-
-### Backend CPU · Kokoro (voz fija, rápido)
+Lo único necesario para arrancar es un entorno base ligero (PySide6). **Los
+motores de síntesis NO se instalan aquí**: se descargan bajo demanda desde la
+propia interfaz.
 
 ```bash
-python3.11 -m venv venv
-source venv/bin/activate
-# PyTorch versión CPU:
-pip install torch==2.12.1+cpu torchaudio==2.11.0+cpu \
-    --index-url https://download.pytorch.org/whl/cpu
-pip install -r requirements-cpu.txt
+python3.11 -m venv venv_gui
+source venv_gui/bin/activate
+pip install -r requirements-gui.txt
+deactivate
+
+./xtts_gui.sh          # abre la GUI
 ```
 
-Cada archivo `requirements-*.txt` lleva estas instrucciones en su cabecera. El
-`requirements.txt` raíz es solo un índice explicativo.
+### 2. Instalar el motor de voz desde la GUI
 
-> Desde la GUI puedes **desinstalar** cualquiera de los dos entornos
-> (sección *Mantenimiento de entornos*) para liberar espacio.
+En la sección **Modelo / dispositivo**, al elegir un backend que aún no está
+instalado, la GUI te ofrece **instalarlo en ese momento**. También puedes usar
+los botones **Instalar / Desinstalar** de la sección *Mantenimiento de entornos*:
+
+- **GPU · XTTS-v2** → crea `venv_xtts/` con `requirements-gpu.txt` (PyTorch CUDA 12.4).
+- **CPU · Kokoro** → crea `venv/` con `requirements-cpu.txt` (PyTorch CPU).
+
+Internamente esto ejecuta `install_backend.sh`, que crea el venv correcto e
+instala el PyTorch y las dependencias adecuadas según el backend.
+
+> Cada backend vive en su **propio entorno**, independiente y no intercambiable
+> (las versiones de `torch` y `transformers` chocan entre sí). El de la GUI
+> (`venv_gui`) es aparte y mínimo.
+
+### Instalación manual (opcional, sin GUI)
+
+```bash
+./install_backend.sh gpu     # XTTS-v2 (voz clonada) → venv_xtts/
+./install_backend.sh cpu     # Kokoro (voz fija)     → venv/
+```
+
+Cada `requirements-*.txt` lleva además las instrucciones detalladas en su
+cabecera; el `requirements.txt` raíz es solo un índice explicativo.
 
 ---
 
@@ -210,8 +219,11 @@ voz_clonada/         Herramientas de grabación/limpieza de voz (sin audios)
   ├─ grabar_muestras.sh   Grabador guiado
   ├─ a_wav.sh             Conversor/mezclador a .wav 24 kHz mono
   └─ GUION_LECTURA.txt    Textos para las tomas
+install_backend.sh   Crea e instala un backend (cpu|gpu) en su venv
+requirements-gui.txt Entorno base mínimo para la GUI (venv_gui)
 requirements-gpu.txt Dependencias del entorno XTTS (venv_xtts)
 requirements-cpu.txt Dependencias del entorno Kokoro (venv)
+docs/gui.png         Captura de la interfaz
 *.sh / *.desktop     Lanzadores
 ```
 

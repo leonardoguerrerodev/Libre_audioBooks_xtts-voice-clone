@@ -1,0 +1,17 @@
+# ============================================================================
+#  requirements-gui.txt  ·  Entorno BASE para ejecutar solo la GUI
+# ----------------------------------------------------------------------------
+#  Esto es lo ÚNICO necesario para abrir la interfaz (gui.py). No incluye
+#  ningún motor de síntesis: los backends (CPU/Kokoro o GPU/XTTS) se instalan
+#  bajo demanda DESDE la propia GUI al elegir el modelo de voz.
+#
+#  Crear el entorno base:
+#     python3 -m venv venv_gui
+#     source venv_gui/bin/activate
+#     pip install -r requirements-gui.txt
+#
+#  Luego lanza:  ./xtts_gui.sh
+# ============================================================================
+
+PySide6_Essentials==6.11.1
+shiboken6==6.11.1

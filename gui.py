@@ -57,6 +57,10 @@ class Main(QWidget):
         self.play_proc = None
         self._play_after = None
         self._buf = ""
+        # instalación de backends bajo demanda
+        self.install_proc = None
+        self._installing = None        # clave en curso, o None
+        self._install_buf = ""
         # worker XTTS residente para previews rápidas
         self.worker = None
         self.worker_ready = False
@@ -99,6 +103,7 @@ class Main(QWidget):
         self.rb_cpu.toggled.connect(self._update_voice_hint)
         self.rb_gpu.toggled.connect(self._update_voice_hint)
         self.cb_voice.currentIndexChanged.connect(self._update_voice_hint)
+        self.bg.buttonClicked.connect(self._on_backend_clicked)
         self.reload_voices()
 
         # ── Prosodia / naturalidad (solo XTTS/GPU) ─────────────────────
@@ -203,7 +208,9 @@ class Main(QWidget):
         env_grid.addWidget(QLabel("Backend"), 0, 0)
         env_grid.addWidget(QLabel("Estado"), 0, 1)
         env_grid.addWidget(QLabel(""), 0, 2)
+        env_grid.addWidget(QLabel(""), 0, 3)
         self.env_status = {}      # key -> QLabel
+        self.env_install = {}     # key -> QPushButton
         self.env_uninstall = {}   # key -> QPushButton
         for r, key in enumerate(("cpu", "gpu"), start=1):
             name = "CPU · Kokoro" if key == "cpu" else "GPU · XTTS-v2"
@@ -211,12 +218,18 @@ class Main(QWidget):
             st = QLabel("—")
             self.env_status[key] = st
             env_grid.addWidget(st, r, 1)
-            btn = QPushButton("Desinstalar")
-            btn.setToolTip(f"Borra la carpeta {os.path.basename(BACKENDS[key]['venv'])} "
-                           "para liberar espacio")
-            btn.clicked.connect(lambda _=False, k=key: self.uninstall_venv(k))
-            self.env_uninstall[key] = btn
-            env_grid.addWidget(btn, r, 2)
+            bi = QPushButton("Instalar")
+            bi.setToolTip(f"Crea {os.path.basename(BACKENDS[key]['venv'])} e "
+                          f"instala {BACKENDS[key]['reqs']} (PyTorch incluido)")
+            bi.clicked.connect(lambda _=False, k=key: self.install_backend(k))
+            self.env_install[key] = bi
+            env_grid.addWidget(bi, r, 2)
+            bu = QPushButton("Desinstalar")
+            bu.setToolTip(f"Borra la carpeta {os.path.basename(BACKENDS[key]['venv'])} "
+                          "para liberar espacio")
+            bu.clicked.connect(lambda _=False, k=key: self.uninstall_venv(k))
+            self.env_uninstall[key] = bu
+            env_grid.addWidget(bu, r, 3)
         root.addWidget(gb_env)
         self._refresh_env_status()
 
@@ -363,30 +376,135 @@ class Main(QWidget):
             self.log(f"🗑  Configuración eliminada: {name}", "#ffcc66")
 
     def _refresh_env_status(self):
-        """Actualiza etiquetas de estado, botones y radios según los venvs."""
+        """Actualiza etiquetas de estado y botones Instalar/Desinstalar."""
         radios = {"cpu": self.rb_cpu, "gpu": self.rb_gpu}
+        busy = self._installing is not None
         for key in ("cpu", "gpu"):
             installed = self._venv_installed(key)
             st = self.env_status[key]
-            if installed:
-                st.setText("✓ instalado")
-                st.setStyleSheet("color:#2e7d32;")
+            if self._installing == key:
+                st.setText("⏳ instalando…"); st.setStyleSheet("color:#b58900;")
+            elif installed:
+                st.setText("✓ instalado"); st.setStyleSheet("color:#2e7d32;")
             else:
-                st.setText("✗ no instalado")
-                st.setStyleSheet("color:#c62828;")
-            self.env_uninstall[key].setEnabled(installed)
-            radios[key].setEnabled(installed)
-            if not installed:
-                radios[key].setToolTip(
-                    f"Falta el entorno. Reinstala con: "
-                    f"pip install -r {BACKENDS[key]['reqs']}")
-            else:
-                radios[key].setToolTip("")
-        # si el backend seleccionado quedó sin instalar, cambia al otro
-        if not self._venv_installed(self._backend_key()):
-            other = "cpu" if self._backend_key() == "gpu" else "gpu"
-            if self._venv_installed(other):
-                radios[other].setChecked(True)
+                st.setText("✗ no instalado"); st.setStyleSheet("color:#c62828;")
+            self.env_install[key].setEnabled(not installed and not busy)
+            self.env_uninstall[key].setEnabled(installed and not busy)
+            # el modelo siempre se puede seleccionar: si no está, se ofrece instalar
+            radios[key].setToolTip("" if installed else
+                                   "No instalado — al seleccionarlo se ofrece instalarlo")
+
+    def _on_backend_clicked(self, _btn):
+        """Si eligen un backend no instalado, ofrecer instalarlo al momento."""
+        key = self._backend_key()
+        if not self._venv_installed(key) and self._installing is None:
+            self.install_backend(key, ask=True)
+
+    # ── instalación de backends bajo demanda ────────────────────────────
+    def install_backend(self, key, ask=True):
+        if self._installing is not None:
+            self.log("⏳ Ya hay una instalación en curso.", "#ffcc66"); return
+        if self._venv_installed(key):
+            return
+        name = "CPU · Kokoro" if key == "cpu" else "GPU · XTTS-v2"
+        script = os.path.join(BASE_DIR, "install_backend.sh")
+        if not os.path.isfile(script):
+            self.log(f"✗ Falta {script}", "#ff6b6b"); return
+        extra = ("\n\nDescargará PyTorch con CUDA (varios GB); puede tardar."
+                 if key == "gpu" else
+                 "\n\nDescargará PyTorch (CPU) y dependencias.")
+        if ask and QMessageBox.question(
+                self, "Instalar backend",
+                f"¿Instalar el entorno «{name}»?\n"
+                f"Se creará {os.path.basename(BACKENDS[key]['venv'])}/ con "
+                f"{BACKENDS[key]['reqs']}.{extra}",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No) != QMessageBox.Yes:
+            return
+
+        self._installing = key
+        self._install_buf = ""
+        self.term.clear()
+        self.btn_go.setEnabled(False)
+        self.btn_preview.setEnabled(False)
+        self.pb_load.setRange(0, 0)            # barra "ocupada"
+        self.lbl_load.setText(f"Instalando {name} (mira la terminal)…")
+        self._refresh_env_status()
+        self.log(f"⚙ Instalando backend «{name}»…", "#7fd1ff")
+
+        env = self._base_env()
+        py3 = shutil.which("python3") or "python3"
+        env.insert("PYTHON", py3)
+        self.install_proc = QProcess(self)
+        self.install_proc.setProcessEnvironment(env)
+        self.install_proc.setWorkingDirectory(BASE_DIR)
+        self.install_proc.setProcessChannelMode(QProcess.MergedChannels)
+        self.install_proc.readyReadStandardOutput.connect(self._on_install_out)
+        self.install_proc.finished.connect(self._on_install_finished)
+        self.install_proc.errorOccurred.connect(
+            lambda e: self.log(f"✗ Error del instalador: {e}", "#ff6b6b"))
+        self.install_proc.start("bash", [script, key])
+
+    def _on_install_out(self):
+        self._install_buf += bytes(
+            self.install_proc.readAllStandardOutput()).decode("utf-8", "replace")
+        while "\n" in self._install_buf:
+            line, self._install_buf = self._install_buf.split("\n", 1)
+            if line.strip():
+                self.log(line)
+
+    def _on_install_finished(self, code, _status):
+        key = self._installing
+        self._installing = None
+        self.install_proc = None
+        self.pb_load.setRange(0, 100); self.pb_load.setValue(0)
+        self.lbl_load.setText("Carga del modelo")
+        self.btn_go.setEnabled(True)
+        self.btn_preview.setEnabled(self._venv_installed("gpu"))
+        if code == 0 and self._venv_installed(key):
+            self.log("✓ Backend instalado.", "#7CFC00")
+        else:
+            self.log(f"✗ La instalación falló (código {code}).", "#ff6b6b")
+        self._refresh_env_status()
+        self._update_voice_hint()
+
+    def uninstall_venv(self, key):
+        bk = BACKENDS[key]
+        venv_dir = bk["venv"]
+        name = "CPU · Kokoro" if key == "cpu" else "GPU · XTTS-v2"
+        if not os.path.isdir(venv_dir):
+            self._refresh_env_status()
+            return
+        # no permitir borrar el entorno mientras se está usando
+        if self.proc and self.proc.state() != QProcess.NotRunning \
+                and self._backend_key() == key:
+            QMessageBox.warning(
+                self, "En uso",
+                "Hay una conversión en curso con este backend. "
+                "Cancélala antes de desinstalarlo.")
+            return
+
+        running_from_here = os.path.abspath(sys.executable).startswith(
+            os.path.abspath(venv_dir) + os.sep)
+        msg = (f"¿Borrar el entorno «{name}»?\n\n"
+               f"Se eliminará la carpeta:\n{venv_dir}\n\n"
+               f"Podrás reinstalarlo desde aquí cuando quieras.")
+        if running_from_here:
+            msg += ("\n\n⚠  La GUI se está ejecutando con este entorno. "
+                    "Podrás seguir usándola ahora, pero al cerrarla no "
+                    "volverá a abrirse hasta reinstalarlo.")
+        if QMessageBox.question(
+                self, "Desinstalar entorno", msg,
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No) != QMessageBox.Yes:
+            return
+        try:
+            shutil.rmtree(venv_dir)
+            self.log(f"🗑  Entorno «{name}» desinstalado: {venv_dir}", "#ffcc66")
+        except OSError as e:
+            self.log(f"✗ No se pudo borrar {venv_dir}: {e}", "#ff6b6b")
+            QMessageBox.critical(self, "Error", f"No se pudo borrar:\n{e}")
+        self._refresh_env_status()
 
     def uninstall_venv(self, key):
         bk = BACKENDS[key]
@@ -501,7 +619,16 @@ class Main(QWidget):
 
     # ── ejecución ──────────────────────────────────────────────────────
     def start(self):
-        bk = BACKENDS[self._backend_key()]
+        if self._installing is not None:
+            self.log("⏳ Espera a que termine la instalación.", "#ffcc66"); return
+        key = self._backend_key()
+        bk = BACKENDS[key]
+        # backend no instalado → ofrecer instalarlo en vez de fallar
+        if not self._venv_installed(key):
+            self.log("• Ese backend no está instalado; ofreciendo instalación…",
+                     "#ffcc66")
+            self.install_backend(key, ask=True)
+            return
         inp = self.ed_in.text().strip()
         outd = self.ed_out.text().strip()
 
@@ -512,8 +639,6 @@ class Main(QWidget):
         voz = self.selected_voice()
         if bk["needs_voice"] and (not voz or not os.path.isfile(voz)):
             self.log("✗ Selecciona una voz clonada válida (carpeta voz_clonada).", "#ff6b6b"); return
-        if not os.path.isfile(bk["python"]):
-            self.log(f"✗ No existe el intérprete: {bk['python']}", "#ff6b6b"); return
 
         stem = os.path.splitext(os.path.basename(inp))[0]
         outp = os.path.join(outd, stem + ".wav")
